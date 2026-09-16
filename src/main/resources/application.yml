@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: fly-mcp
+  main:
+    banner-mode: off
+    web-application-type: servlet
+  ai:
+    mcp:
+      server:
+        protocol: STREAMABLE
+        type: SYNC
+        name: fly-mcp
+        version: 0.1.0
+        instructions: >-
+          The fly is a MaleCNS v1.0 connectome read through an engineered
+          decoder. Verdicts are a comedy oracle built on spike data, not
+          intelligence. Consult it for fun, never for truth.
+
+flybrain:
+  base-url: ${FLYBRAIN_BASE_URL:}

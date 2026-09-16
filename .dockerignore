@@ -1,0 +1,11 @@
+.git
+.gradle
+build
+infra
+oracle
+local-runs
+*.tfstate*
+*.tfvars
+.env
+README.md
+HANDOFF.md
