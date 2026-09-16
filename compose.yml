@@ -1,0 +1,60 @@
+# fly-mcp stack.
+# - prepare: one-shot MaleCNS dataset download + graph build into /data (real brain only)
+# - oracle:  the fly brain HTTP API (FastAPI wrapping Stonkfly's neural package)
+# - warmup:  one-shot consult so the connectome and kernel load at boot
+# - mcp:     the Spring Boot MCP server on :8080 (the only published port)
+
+services:
+  prepare:
+    build: ./oracle
+    entrypoint: sh -c 'if [ "$FLY_BRAIN" = "real" ]; then test -f /data/graph.npz || python -m stonkfly prepare; else echo "FLY_BRAIN=mock, skipping dataset prepare"; fi'
+    environment:
+      - FLY_BRAIN=${FLY_BRAIN:-real}
+      - STONKFLY_DATA=/data
+    volumes:
+      - data:/data
+    restart: "no"
+
+  oracle:
+    build: ./oracle
+    environment:
+      - FLY_BRAIN=${FLY_BRAIN:-real}
+      - STONKFLY_HOME=/opt/stonkfly
+      - STONKFLY_DATA=/data
+      - DATA_DIR=/data
+    volumes:
+      - data:/data
+    depends_on:
+      prepare:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: always
+
+  warmup:
+    build: ./oracle
+    environment:
+      - ORACLE_URL=http://oracle:8000
+    depends_on:
+      oracle:
+        condition: service_healthy
+    restart: "no"
+    command: ["python", "-m", "app.warmup"]
+
+  mcp:
+    build: .
+    environment:
+      - FLYBRAIN_BASE_URL=http://oracle:8000
+    ports:
+      - "8080:8080"
+    depends_on:
+      warmup:
+        condition: service_completed_successfully
+    restart: always
+
+volumes:
+  data:

@@ -1,0 +1,10 @@
+# Real brain: MaleCNS dataset + Stonkfly kernel. Pinned to Stonkfly's own
+# versions so the vendored kernel contract holds; g++ is installed in the
+# image for the kernel build.
+numpy==2.4.6
+pandas==3.0.5
+pyarrow==25.0.1
+Pillow==12.3.0
+fastapi==0.120.0
+uvicorn==0.40.0
+python-dotenv==1.1.0
